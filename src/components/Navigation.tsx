@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/lib/supabaseAuth';
 import { 
   LayoutDashboard, 
   Search, 
@@ -15,13 +15,13 @@ import {
 import { useState } from 'react';
 
 const Navigation = () => {
-  const { user, logout } = useAuth();
+  const { user, profile, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/');
     setIsMobileMenuOpen(false);
   };
@@ -41,11 +41,11 @@ const Navigation = () => {
     { path: '/admin/responses', label: 'Responses', icon: BarChart3 }
   ];
 
-  const navItems = user?.role === 'admin' ? adminNavItems : userNavItems;
+  const navItems = profile?.role === 'admin' ? adminNavItems : userNavItems;
 
   const isActive = (path: string) => location.pathname === path;
 
-  if (!user) {
+  if (!user || !profile) {
     return (
       <nav className="bg-background border-b border-border shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -78,7 +78,7 @@ const Navigation = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to={user.role === 'admin' ? '/admin/dashboard' : '/dashboard'} className="flex items-center space-x-2">
+          <Link to={profile.role === 'admin' ? '/admin/dashboard' : '/dashboard'} className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-lg">S</span>
             </div>
@@ -108,7 +108,7 @@ const Navigation = () => {
           {/* Desktop User Menu */}
           <div className="hidden md:flex items-center space-x-4">
             <span className="text-sm text-muted-foreground">
-              Welcome, {user.name}
+              Welcome, {profile.full_name || user.email}
             </span>
             <Button variant="outline" size="sm" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />
@@ -152,7 +152,7 @@ const Navigation = () => {
               
               <div className="pt-4 border-t border-border mt-4">
                 <div className="px-3 py-2 text-sm text-muted-foreground">
-                  {user.name}
+                  {profile.full_name || user.email}
                 </div>
                 <Button variant="outline" className="w-full justify-start" onClick={handleLogout}>
                   <LogOut className="h-4 w-4 mr-2" />

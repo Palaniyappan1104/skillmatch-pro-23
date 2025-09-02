@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth, demoCredentials } from '@/lib/auth';
+import { useAuth, demoCredentials } from '@/lib/supabaseAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 
@@ -33,7 +33,7 @@ const Login = () => {
         description: "You've successfully logged in.",
       });
       
-      // Redirect based on user role (handled by the auth context)
+      // Redirect based on user profile role
       navigate(from, { replace: true });
     } else {
       toast({
@@ -84,7 +84,7 @@ const Login = () => {
               className="w-full justify-start text-xs"
               onClick={() => fillDemoCredentials('user')}
             >
-              👤 Job Seeker: alex.chen@email.com
+              👤 Job Seeker: user@skillmatch.com
             </Button>
             <Button
               variant="outline"
@@ -92,7 +92,7 @@ const Login = () => {
               className="w-full justify-start text-xs"
               onClick={() => fillDemoCredentials('admin')}
             >
-              🏢 Employer: sarah.johnson@skillmatch.com
+              🏢 Employer: admin@skillmatch.com
             </Button>
           </div>
         </div>

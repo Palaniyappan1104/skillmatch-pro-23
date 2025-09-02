@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useAuth } from '@/lib/supabaseAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, UserPlus } from 'lucide-react';
 
@@ -22,6 +23,7 @@ const Signup = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
+  const { signup } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -57,15 +59,22 @@ const Signup = () => {
     
     setIsLoading(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    const result = await signup(formData.email, formData.password, formData.name, formData.role);
     
-    toast({
-      title: "Account created successfully!",
-      description: "You can now sign in with your new account.",
-    });
+    if (result.success) {
+      toast({
+        title: "Account created successfully!",
+        description: "Please check your email to verify your account before signing in.",
+      });
+      navigate('/login');
+    } else {
+      toast({
+        title: "Signup failed",
+        description: result.error,
+        variant: "destructive",
+      });
+    }
     
-    navigate('/login');
     setIsLoading(false);
   };
 
