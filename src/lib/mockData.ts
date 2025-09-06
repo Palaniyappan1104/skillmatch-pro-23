@@ -202,6 +202,27 @@ export const mockJobs: Job[] = [
     ],
     experience: 'Mid',
     department: 'Product'
+  },
+  {
+    id: 'job-5',
+    title: 'DevOps Engineer',
+    company: 'CloudNest',
+    location: 'Seattle, WA',
+    type: 'Full-time',
+    remote: true,
+    salary: { min: 140000, max: 175000 },
+    skills: ['AWS', 'Docker', 'Kubernetes', 'Terraform', 'CI/CD'],
+    postedAt: '2025-08-20T08:00:00Z',
+    description: 'Design, implement, and manage our cloud infrastructure and CI/CD pipelines. Ensure high availability, scalability, and security of our services.',
+    requirements: [
+      '5+ years of DevOps experience',
+      'Strong expertise in AWS',
+      'Hands-on experience with Docker and Kubernetes',
+      'Proficiency in infrastructure as code (Terraform, CloudFormation)',
+      'Experience with CI/CD tools (Jenkins, GitLab CI, GitHub Actions)'
+    ],
+    experience: 'Senior',
+    department: 'Infrastructure'
   }
 ];
 
@@ -238,6 +259,14 @@ export const mockApplications: Application[] = [
     appliedAt: '2025-07-20T14:20:00Z',
     status: 'Offer',
     notes: 'Received offer - considering terms'
+  },
+  {
+    id: 'app-5',
+    jobId: 'job-5',
+    userId: 'user-1',
+    appliedAt: '2025-08-22T11:00:00Z',
+    status: 'Applied',
+    notes: 'Followed up with recruiter after application.'
   }
 ];
 

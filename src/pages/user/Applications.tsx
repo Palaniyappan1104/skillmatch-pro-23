@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/lib/supabaseAuth';
 import { mockApplications, mockJobs, getApplicationsByUserId, getJobById } from '@/lib/mockData';
 import { 
   Search, 
@@ -23,12 +23,19 @@ import {
   Eye,
   Briefcase
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Applications = () => {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('date');
+  const [isAddApplicationDialogOpen, setIsAddApplicationDialogOpen] = useState(false);
+  const [newApplicationData, setNewApplicationData] = useState({
+    jobId: '',
+    status: 'Applied',
+    notes: '',
+  });
 
   // Get user's applications
   const userApplications = user ? getApplicationsByUserId(user.id) : [];
@@ -98,6 +105,25 @@ const Applications = () => {
 
   const stats = getStatusStats();
 
+  const handleAddApplication = () => {
+    if (user && newApplicationData.jobId) {
+      const newApp = {
+        id: `app-${Date.now()}`,
+        jobId: newApplicationData.jobId,
+        userId: user.id,
+        appliedAt: new Date().toISOString(),
+        status: newApplicationData.status as any,
+        notes: newApplicationData.notes,
+      };
+      mockApplications.push(newApp as any); // Directly push to mock data for now
+      setNewApplicationData({ jobId: '', status: 'Applied', notes: '' });
+      setIsAddApplicationDialogOpen(false);
+      // Force re-render by updating a dummy state or by navigating
+      // For now, a simple re-render of this component should suffice
+      window.location.reload(); // Simple reload to reflect changes in mock data
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-accent/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -110,10 +136,76 @@ const Applications = () => {
                 Track your applications and statuses
               </p>
             </div>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Application
-            </Button>
+            <Dialog open={isAddApplicationDialogOpen} onOpenChange={setIsAddApplicationDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Application
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Add New Application</DialogTitle>
+                  <DialogDescription>
+                    Manually add a job application to your tracker.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="jobId" className="text-right">
+                      Job
+                    </Label>
+                    <Select
+                      value={newApplicationData.jobId}
+                      onValueChange={(value) => setNewApplicationData(prev => ({ ...prev, jobId: value }))}
+                    >
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select a job" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {mockJobs.map(job => (
+                          <SelectItem key={job.id} value={job.id}>
+                            {job.title} at {job.company}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="status" className="text-right">
+                      Status
+                    </Label>
+                    <Select
+                      value={newApplicationData.status}
+                      onValueChange={(value) => setNewApplicationData(prev => ({ ...prev, status: value }))}
+                    >
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {['Applied', 'Interview', 'Offer', 'Rejected', 'Withdrawn'].map(status => (
+                          <SelectItem key={status} value={status}>
+                            {status}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="notes" className="text-right">
+                      Notes
+                    </Label>
+                    <Textarea
+                      id="notes"
+                      value={newApplicationData.notes}
+                      onChange={(e) => setNewApplicationData(prev => ({ ...prev, notes: e.target.value }))}
+                      className="col-span-3"
+                    />
+                  </div>
+                </div>
+                <Button type="submit" onClick={handleAddApplication}>Add Application</Button>
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Stats Cards */}
@@ -323,17 +415,22 @@ const Applications = () => {
             ) : (
               <div className="text-center py-12">
                 <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No applications found</h3>
+                <h3 className="text-xl font-semibold mb-2">No applications to display!</h3>
                 <p className="text-muted-foreground mb-4">
                   {searchTerm || statusFilter !== 'all' 
-                    ? 'Try adjusting your search or filter criteria.'
-                    : 'Start applying for jobs to track your progress here.'
+                    ? 'Try adjusting your search or filter criteria, or add a new application.'
+                    : 'Start tracking your job applications by adding your first one or browsing opportunities.'
                   }
                 </p>
                 {(!searchTerm && statusFilter === 'all') && (
-                  <Button asChild>
-                    <a href="/jobs">Browse Jobs</a>
-                  </Button>
+                  <div className="flex justify-center gap-4">
+                    <Button onClick={() => setIsAddApplicationDialogOpen(true)}>
+                      <Plus className="h-4 w-4 mr-2" /> Add Application
+                    </Button>
+                    <Button asChild>
+                      <Link to="/jobs">Browse Jobs</Link>
+                    </Button>
+                  </div>
                 )}
               </div>
             )}

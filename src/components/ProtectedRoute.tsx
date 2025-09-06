@@ -11,6 +11,10 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { user, profile, isLoading } = useAuth();
   const location = useLocation();
 
+  console.log("ProtectedRoute - isLoading:", isLoading);
+  console.log("ProtectedRoute - user:", user);
+  console.log("ProtectedRoute - profile:", profile);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
